@@ -1,0 +1,13 @@
+[Unit]
+Description=mujoco-cauldron: decide at boot whether this host gives the container a usable GPU
+Documentation=file:/opt/mujoco-cauldron/bin/detect.py
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/mujoco-cauldron/bin/detect.py
+RemainAfterExit=yes
+TimeoutStartSec=90
+
+[Install]
+WantedBy=multi-user.target

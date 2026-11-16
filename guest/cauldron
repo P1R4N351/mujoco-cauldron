@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+"""cauldron — the one command for this container.
+
+Authored-by: CPCS. Standard library only.
+
+  cauldron status        what this container decided it is running on, and what is installed
+  cauldron detect        decide again now (also runs at every boot)
+  cauldron check         decide again, then prove the decision: run the self-test in that mode
+  cauldron python ...    run the simulation environment's Python with the decision in its environment
+  cauldron gpu-setup     install the NVIDIA libraries that match this host's driver (needs a GPU host)
+"""
+import json
+import os
+import subprocess
+import sys
+
+BASE = "/opt/mujoco-cauldron"
+VENV_PYTHON = os.path.join(BASE, "venv", "bin", "python")
+DETECT = os.path.join(BASE, "bin", "detect.py")
+SELFTEST = os.path.join(BASE, "bin", "selftest.py")
+GPU_SETUP = os.path.join(BASE, "bin", "gpu-setup.sh")
+STATE_PATH = "/run/mujoco-cauldron/state.json"
+PACKAGES = ("mujoco", "numpy", "torch", "mjlab", "mujoco_warp", "warp_lang", "rsl_rl_lib", "gymnasium", "onnx", "onnxruntime")  # distribution names
+
+
+def run_detect():
+    """Run the detector, which records and prints its decision. Returns the record, or None."""
+    assert os.path.isfile(DETECT), "detector missing: %s" % DETECT
+    proc = subprocess.run([sys.executable, DETECT], capture_output=True, text=True, timeout=60)
+    if proc.returncode != 0:
+        sys.stderr.write("detect failed (rc %d): %s\n" % (proc.returncode, proc.stderr[-400:]))
+        return None
+    return json.loads(proc.stdout)
+
+
+def load_state():
+    """The last recorded decision; decides now if none has been recorded since boot."""
+    assert STATE_PATH.endswith(".json")
+    try:
+        with open(STATE_PATH, "r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (OSError, ValueError):
+        return run_detect()
+
+
+def child_env(state):
+    """The environment a simulation process gets: the decision, as MUJOCO_CAULDRON_* and MUJOCO_GL."""
+    assert isinstance(state, dict) and state.get("mode") in ("gpu", "cpu")
+    env = dict(os.environ)
+    for key, value in state.items():
+        env["MUJOCO_CAULDRON_%s" % key.upper()] = str(value)
+    env["MUJOCO_GL"] = str(state["mujoco_gl"])
+    return env
+
+
+def installed_versions():
+    """{package: version or 'not installed'} from the simulation environment."""
+    assert len(PACKAGES) > 0
+    if not os.path.isfile(VENV_PYTHON):
+        return {"environment": "not built: run bootstrap.sh"}
+    code = ("import importlib.metadata as m, json\n"
+            "names = %r\nout = {}\n"
+            "for n in names:\n"
+            "    try:\n        out[n] = m.version(n.replace('_', '-'))\n"
+            "    except m.PackageNotFoundError:\n        out[n] = 'not installed'\n"
+            "print(json.dumps(out))\n") % (PACKAGES,)
+    proc = subprocess.run([VENV_PYTHON, "-c", code], capture_output=True, text=True, timeout=120)
+    if proc.returncode != 0:
+        return {"environment": "broken: %s" % proc.stderr.strip()[-200:]}
+    return json.loads(proc.stdout)
+
+
+def cmd_status():
+    """Print the decision and what is installed."""
+    state = load_state()
+    if state is None:
+        return 1
+    print("mode      %s  (%s)" % (state["mode"], state["reason"]))
+    print("device    %s   parallel simulations to start with: %s" % (state["device"], state["num_envs"]))
+    if state["mode"] == "gpu":
+        print("gpu       %s, %s of %s MiB free, host driver %s" % (state["gpu_name"], state["gpu_mem_free_mib"], state["gpu_mem_total_mib"], state["host_driver"]))
+    print("cpu       %s threads, %s" % (state["cpu_threads"], state["cpu_model"] or "model unknown"))
+    print("memory    %s MiB limit" % state["mem_limit_mib"])
+    print("decided   %s" % state["detected_at"])
+    for name, version in installed_versions().items():
+        print("  %-14s %s" % (name, version))
+    return 0
+
+
+def cmd_check():
+    """Decide afresh and run the self-test in that mode. Exit status is the self-test's."""
+    state = run_detect()
+    if state is None:
+        return 1
+    if not os.path.isfile(VENV_PYTHON):
+        sys.stderr.write("the simulation environment is not built: run bootstrap.sh\n")
+        return 3
+    return subprocess.run([VENV_PYTHON, SELFTEST], env=child_env(state), timeout=900).returncode
+
+
+def cmd_python(args):
+    """Replace this process with the simulation environment's Python."""
+    assert isinstance(args, list)
+    state = load_state()
+    if state is None or not os.path.isfile(VENV_PYTHON):
+        sys.stderr.write("no decision or no environment; run: cauldron check\n")
+        return 3
+    os.execve(VENV_PYTHON, [VENV_PYTHON] + args, child_env(state))
+    return 1  # not reached
+
+
+def main(argv):
+    """Dispatch one verb."""
+    assert isinstance(argv, list)
+    verb = argv[1] if len(argv) > 1 else "status"
+    if verb == "status" and len(argv) <= 2:
+        return cmd_status()
+    if verb == "detect" and len(argv) == 2:
+        return 0 if run_detect() is not None and cmd_status() == 0 else 1
+    if verb == "check" and len(argv) == 2:
+        return cmd_check()
+    if verb == "python":
+        return cmd_python(argv[2:])
+    if verb == "gpu-setup":
+        return subprocess.run(["bash", GPU_SETUP] + argv[2:], timeout=3600).returncode
+    sys.stderr.write(__doc__)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

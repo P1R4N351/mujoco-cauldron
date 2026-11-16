@@ -1,0 +1,16 @@
+mujoco-cauldron
+Copyright (c) 2026 PiSCES - The Piranesi-Satraj Composite Expert System.
+
+Code is licensed under the Mozilla Public License 2.0; see LICENSE.
+Documentation (README.md) and recorded data are licensed under Creative
+Commons Attribution 4.0 International (CC BY 4.0).
+Attribution string: "PiSCES - The Piranesi-Satraj Composite Expert System".
+
+This project is not affiliated with Anki or Digital Dream Labs; Vector is
+their product. No third-party source files or assets are included.
+
+In this published copy host names and addresses were replaced by
+placeholders: node-a (the node that holds the container), admin-node (the
+node the scripts are run from), gpu-node (the node with the NVIDIA GPU) and
+192.0.2.x addresses. Set them for your own cluster in host/create-ct.sh
+before running it. Personal names were removed.
