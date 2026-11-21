@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap.sh — provision a fresh Debian 12 container as mujoco-cauldron. Authored-by: CPCS.
+# bootstrap.sh — provision a fresh Debian 12 container as mujoco-cauldron.
 # Run inside the container, as root, from the directory holding this file's siblings:
 #   bash bootstrap.sh            install everything (idempotent; safe to run again)
 #   bash bootstrap.sh --check    report what is and is not in place; changes nothing
