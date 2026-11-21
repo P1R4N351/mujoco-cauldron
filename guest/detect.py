@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """detect — decide, where this container is running now, whether it has a usable NVIDIA GPU.
 
-Authored-by: CPCS. Standard library only; runs at boot and on demand.
+Standard library only; runs at boot and on demand.
 
 The container's configuration bind-mounts the host's NVIDIA devices with
 `optional,create=file`. On a node with no GPU the mounts are skipped but the
