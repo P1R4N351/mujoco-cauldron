@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the GPU-or-CPU decision. Standard library only; no GPU, no container needed.
 
-Authored-by: CPCS. Run:  python3 -m unittest discover -s skills/mujoco-cauldron/tests -v
+Run:  python3 -m unittest discover -s skills/mujoco-cauldron/tests -v
 
 Every case stands in for a machine through FakeProbes. The cases named for hosts
 copy what was observed there on 2026-11-14: node-a (no GPU, placeholder
