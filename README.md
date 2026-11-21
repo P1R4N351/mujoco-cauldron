@@ -5,7 +5,7 @@ description: CT 930, a container for MuJoCo simulation and policy training that 
 
 # mujoco-cauldron
 
-Authored-by: CPCS. Built 2026-11-14 at the operator's request, for training robot
+Built 2026-11-14 at the operator's request, for training robot
 policies in simulation (Vector first) and carrying them to the real robot.
 
 | | |
