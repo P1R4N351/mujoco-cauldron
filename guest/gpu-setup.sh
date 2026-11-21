@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gpu-setup.sh — install the NVIDIA user-space libraries that match the host's kernel driver.
-# Authored-by: CPCS. Run inside the container as root (cauldron gpu-setup).
+# Run inside the container as root (cauldron gpu-setup).
 #
 # A container shares the host's kernel driver, and the libraries inside must be the SAME version or
 # the GPU is unusable ("driver/library version mismatch"). The version is read from the host's driver
