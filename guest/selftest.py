@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """selftest — prove the mode the container decided on, by running it.
 
-Authored-by: CPCS. Runs inside the simulation environment (cauldron check).
+Runs inside the simulation environment (cauldron check).
 
 Both modes: MuJoCo loads a small model and steps it, on one process and on a few
 in parallel, and the steps match a second run exactly.
