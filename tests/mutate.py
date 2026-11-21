@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Break the GPU-or-CPU detector on purpose and check its tests notice.
 
-Authored-by: CPCS. Run:  python3 skills/mujoco-cauldron/tests/mutate.py
+Run:  python3 skills/mujoco-cauldron/tests/mutate.py
 Each arm changes one line of guest/detect.py in a scratch copy, runs the suite and restores the
 file. CAUGHT means the suite failed; the failing tests are printed. A fault of this harness (a needle
 that does not occur exactly once, an unchanged file, a control that fails) is SETUP-ERROR, never a
