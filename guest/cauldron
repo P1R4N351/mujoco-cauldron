@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """cauldron — the one command for this container.
 
-Authored-by: CPCS. Standard library only.
+Standard library only.
 
   cauldron status        what this container decided it is running on, and what is installed
   cauldron detect        decide again now (also runs at every boot)

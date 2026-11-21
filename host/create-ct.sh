@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create CT 930 mujoco-cauldron on node-a. Run on admin-node (it reaches every node by cluster ssh).
+# Create the mujoco-cauldron container (id VMID below) on node-a. Run on admin-node (it reaches every node by cluster ssh).
 # Idempotent up to the create: refuses if the id or the address is already taken.
 set -euo pipefail
 
@@ -48,7 +48,7 @@ fi
 echo "hookscript sha256 ${want_s:0:16}… present on ${NODE}"
 
 echo "== create"
-desc="mujoco-cauldron: MuJoCo simulation and training for Vector and other robots. Detects at boot whether it has an NVIDIA GPU (gpu-node) or not and configures itself for GPU or CPU; see /opt/mujoco-cauldron and skills/mujoco-cauldron. Built 2026-11-14 by cpcs-5f62f24 at the operator's request."
+desc="mujoco-cauldron: MuJoCo simulation and training for Vector and other robots. Detects at boot whether it has an NVIDIA GPU (gpu-node) or not and configures itself for GPU or CPU; see /opt/mujoco-cauldron. Built 2026-11-14."
 on_node pct create "$VMID" "local:vztmpl/${TEMPLATE}" \
   --hostname mujoco-cauldron --ostype debian --arch amd64 --unprivileged 1 --features nesting=1 \
   --cores 8 --memory 6144 --swap 2048 --rootfs local-zfs:32 \

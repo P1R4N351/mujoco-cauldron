@@ -1,16 +1,16 @@
 ---
 name: mujoco-cauldron
-description: CT 930, a container for MuJoCo simulation and policy training that works on any cluster node. At every boot it detects whether the host gives it a usable NVIDIA GPU and configures itself for GPU or CPU.
+description: A container for MuJoCo simulation and policy training that works on any cluster node. At every boot it detects whether the host gives it a usable NVIDIA GPU and configures itself for GPU or CPU.
 ---
 
 # mujoco-cauldron
 
-Built 2026-11-14 at the operator's request, for training robot
+Built 2026-11-14 for training robot
 policies in simulation (Vector first) and carrying them to the real robot.
 
 | | |
 |---|---|
-| Guest | CT 930 `mujoco-cauldron`, Debian 12, unprivileged |
+| Guest | container `mujoco-cauldron` (id 930, the default in `host/create-ct.sh`), Debian 12, unprivileged |
 | Created on | `node-a` (8 threads, no GPU) |
 | Address | `192.0.2.32/24` on `vmbr1` |
 | Size | 8 cores, 6 GB memory, 2 GB swap, 32 GB root on `local-zfs` |
@@ -55,9 +55,8 @@ brings MuJoCo, MuJoCo Warp, Warp, PyTorch and `rsl-rl`; plus `gymnasium`,
 
 ## Moving it to the GPU
 
-Only `gpu-node` has an NVIDIA GPU (RTX 3060 Ti, 8 GB), shared with the model
-`ollama` holds in CT 902. Its `local-zfs` had 4.5 GB free on 2026-11-14 and
-its `tank` thin pool 68 GB, already above 92%. To run there:
+Only `gpu-node` has an NVIDIA GPU (RTX 3060 Ti, 8 GB), shared with other GPU work
+on that node, and its storage is close to full. To run there:
 
 ```bash
 pct migrate 930 gpu-node --restart --target-storage tank   # from the node that holds it
@@ -83,7 +82,7 @@ reports what is in place without changing anything.
 - `tests/test_detect.py`: 14 tests. `tests/mutate.py`: 12 of 12 injected
   faults caught, each by the test for that property; a wording-only change
   survived.
-- The detector run read-only (`--print`) inside CT 902 on `gpu-node`, against
+- The detector run read-only (`--print`) inside an existing GPU container on `gpu-node`, against
   the real GPU: `mode gpu`, RTX 3060 Ti, 2473 of 8192 MiB free, host driver
   610.43.02. It wrote nothing there.
 - On `node-a` the five device paths were present as 0-byte regular
@@ -95,7 +94,7 @@ reports what is in place without changing anything.
   CPU device only. `mjlab` 1.6.0 and `rsl-rl-lib` 5.4.2 are installed.
 - After `pct reboot 930` the boot unit ran by itself: active, result success,
   decision recorded 5 seconds after boot.
-- `p10-scan --fail-on warn --fail-on-unscannable skills/mujoco-cauldron`:
+- A static scan against the NASA Power-of-Ten rules, warnings fatal:
   errors 0, warns 0.
 
 ## Not done
